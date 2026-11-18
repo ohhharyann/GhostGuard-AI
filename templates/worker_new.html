@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% set title='Workers' %}{% block body %}<div class="bar"><div><h1>Register worker</h1><p class="m"><a href="{{ url_for('workers') }}">Workers</a> / New</p></div></div>
+<form class="card" method="post" style="max-width:560px"><input type="hidden" name="csrf" value="{{ csrf() }}">
+<label for="n">Full name</label><input id="n" class="fw" name="name" required minlength="3" value="{{ request.form.name }}"><label for="a">Age</label><input id="a" class="fw" name="age" type="number" min="18" max="90" required value="{{ request.form.age }}">
+<label for="ph">Phone (10 digits)</label><input id="ph" class="fw" name="phone" required pattern="[0-9]{10}" inputmode="numeric" value="{{ request.form.phone }}"><label for="d">District</label><input id="d" class="fw" name="district" value="Pune">
+<label for="s">Worksite</label><select id="s" class="fw" name="site_id">{% for s in sites %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select><label for="w">Daily wage (₹)</label><input id="w" class="fw" name="wage" type="number" value="312" min="50" max="2000" required>
+<label for="b">Biometric reference ID</label><input id="b" class="fw" name="bio_ref" required minlength="6"><p class="m">Only a hash of this ID is stored. Raw biometric data is never saved.</p>
+<div class="da" style="justify-content:flex-start"><button class="btn">Register worker</button><a class="btn o" href="{{ url_for('workers') }}">Cancel</a></div></form>{% endblock %}

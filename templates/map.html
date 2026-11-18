@@ -1,0 +1,19 @@
+{% extends 'base.html' %}{% set title='Worksites & Maps' %}{% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>{% endblock %}
+{% block body %}<div class="bar"><div><h1>Worksites &amp; Maps</h1><p class="m">Stored coordinates from the database (synthetic demo data, not live tracking).</p></div><div class="acts"><select id="sf" aria-label="Filter by worksite"><option value="">All worksites</option></select></div></div>
+<div class="mw"><div id="map" aria-label="Worksite risk map"></div><div class="ld" id="ldr"><div class="skel" style="width:160px"></div></div></div>
+<div class="lg2 mt"><span><i style="background:#16A34A"></i>Normal worksite</span><span><i style="background:#CA8A04"></i>Review (8%+ flagged)</span><span><i style="background:#DC2626"></i>High (20%+ flagged)</span><span><i style="background:#DC2626;width:6px;height:6px"></i>Suspicious attendance</span><span>Circle = 300 m geofence · use the layer control for Street, Satellite and Terrain</span></div>
+<script>
+const map=L.map('map').setView([18.55,73.85],9),T={'Street':L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}),
+'Satellite':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Tiles &copy; Esri'}),
+'Terrain':L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,attribution:'&copy; OpenStreetMap contributors, SRTM | &copy; OpenTopoMap (CC-BY-SA)'})};
+T.Street.addTo(map);L.control.layers(T).addTo(map);let g=L.layerGroup().addTo(map),D;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function draw(fit){g.clearLayers();const f=document.getElementById('sf').value,S=D.sites.filter(s=>!f||s.id==f),b=[];
+S.forEach(s=>{const col=s.rate>=.2?'#DC2626':s.rate>=.08?'#CA8A04':'#16A34A';b.push([s.lat,s.lng]);
+L.circle([s.lat,s.lng],{radius:s.radius,color:col,fillOpacity:.15}).addTo(g);
+L.circleMarker([s.lat,s.lng],{radius:9,color:'#fff',weight:2,fillColor:col,fillOpacity:1}).bindPopup(`<b>${esc(s.name)}</b><br>Supervisor: ${esc(s.sup)}<br>Workers: ${s.workers}<br>Flagged records: ${s.flagged} (${(s.rate*100).toFixed(1)}%)`).addTo(g)});
+D.points.forEach(p=>{if(f&&!S.some(s=>Math.hypot(s.lat-p.lat,s.lng-p.lng)<.06))return;
+L.circleMarker([p.lat,p.lng],{radius:4,color:'#DC2626',weight:1,fillOpacity:.7}).bindPopup(`${esc(p.w)} ${esc(p.name)}<br>Day ${p.day} · ${p.dist} m from site<br>Risk ${p.risk}`).addTo(g)});
+if(fit&&b.length)map.fitBounds(b,{padding:[30,30],maxZoom:13})}
+fetch('/api/map').then(r=>r.json()).then(d=>{D=d;const s=document.getElementById('sf');d.sites.forEach(x=>s.add(new Option(x.name,x.id)));s.onchange=()=>draw(true);draw(true);ldr.remove()}).catch(()=>{ldr.innerHTML='<p class="m">Map data could not be loaded. Check your connection and reload.</p>'});
+</script>{% endblock %}

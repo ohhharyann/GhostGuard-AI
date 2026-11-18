@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% set title='Fraud Engine' %}{% block body %}<div class="bar"><div><h1>Fraud Engine</h1><p class="m">Alerts, network check, evaluation metrics and Live Check. Runs in your browser on its own synthetic dataset.</p></div></div><iframe src="{{ url_for('engine_app') }}" title="Fraud detection engine"></iframe>{% endblock %}

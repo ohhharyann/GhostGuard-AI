@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GhostGuard AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#EEF1F4;--card:#fff;--ink:#14202B;--mut:#5C6B78;--line:#D5DCE3;--br:#0B6E6E;--hi:#C4302B;--mid:#C98400;--ok:#2E7D4F}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0F161C;--card:#17212A;--ink:#E6EDF2;--mut:#93A3B1;--line:#2A3844;--br:#3FB5B0;--hi:#EF6B65;--mid:#E5A91F;--ok:#5CBF86}}
+:root[data-theme=dark]{--bg:#0F161C;--card:#17212A;--ink:#E6EDF2;--mut:#93A3B1;--line:#2A3844;--br:#3FB5B0;--hi:#EF6B65;--mid:#E5A91F;--ok:#5CBF86}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'IBM Plex Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.w{max-width:1100px;margin:auto;padding:14px}h1{font-size:22px;margin:0}h2{font-size:16px;margin:0 0 8px}p{margin:4px 0}.m{color:var(--mut);font-size:13px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}.g{display:grid;gap:12px}.k{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}.two{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.big{font-size:26px;font-weight:600;line-height:1.1}.tabs{display:flex;gap:4px;overflow-x:auto;margin-bottom:12px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:0;border-bottom:3px solid transparent;color:var(--mut);padding:9px 12px;font:inherit;font-weight:500;cursor:pointer;white-space:nowrap}.tab.on{color:var(--br);border-color:var(--br)}
+button,select,input{font:inherit;color:inherit}.btn{background:var(--br);color:var(--card);border:0;border-radius:7px;padding:7px 12px;cursor:pointer;font-weight:500}.btn.o{background:none;border:1px solid var(--line);color:var(--ink)}
+select{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:6px}:focus-visible{outline:2px solid var(--br);outline-offset:2px}
+.sc{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}th{color:var(--mut);font-weight:500}tr[data-rec]{cursor:pointer}tr[data-rec]:hover{background:var(--bg)}
+.rk{display:inline-block;min-width:38px;text-align:center;border-radius:6px;padding:1px 6px;color:#fff;font-weight:600}.rk.hi{background:var(--hi)}.rk.mid{background:var(--mid)}.rk.ok{background:var(--ok)}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:12px;padding:0 8px;font-size:12px;margin:1px 3px 1px 0}
+.bar{height:8px;border-radius:4px;background:var(--br);min-width:2px}.bt{background:var(--bg);border-radius:4px}.row{display:flex;gap:8px;align-items:center;margin:5px 0}.row>span:first-child{width:150px;flex:none;font-size:13px}
+.dr{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:9;justify-content:flex-end}.dr.on{display:flex}
+.dp{background:var(--card);width:min(540px,100%);height:100%;overflow:auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+textarea{width:100%;height:190px;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:8px;font:12px/1.4 ui-monospace,monospace}
+input[type=range]{width:100%;accent-color:var(--br)}.warn{color:var(--hi);font-weight:600}svg{max-width:100%;height:auto}
+</style></head><body><div class="w">
+<div class="top"><div><h1>GhostGuard AI</h1><p class="m">Ghost worker and attendance fraud detection · biometric + GPS + payment cross-verification</p></div>
+<div style="min-width:240px"><label class="m">Alert threshold: <b id="tv">40</b> / 100</label><input id="th" type="range" min="10" max="90" value="40" aria-label="Alert threshold"></div></div>
+<div class="tabs" id="tabs"></div><main id="v"></main>
+<p class="m" style="margin-top:14px">Data is synthetic (seeded) and modelled on MGNREGA-style fields: 12 worksites, 180 workers, 14 days, with injected fraud and a ground-truth label. <button class="btn o" id="re">Generate new dataset</button></p></div>
+<div class="dr" id="dr"><div class="dp" id="dp"></div></div>
+<script>
+// ===== CORE ENGINE =====
+const WAGE=312,DAYS=14,RAD=300;
+function mb(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const hav=(a,b,c,d)=>{const r=Math.PI/180,x=Math.sin((c-a)*r/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin((d-b)*r/2)**2;return 12742000*Math.asin(Math.sqrt(x))};
+const vec=f=>[f.dist,f.bio,f.pay,f.lag,+!!f.dup,+!!f.acct,+!!f.present];
+function cfn(n){return n<=1?0:2*(Math.log(n-1)+.5772156649)-2*(n-1)/n}
+function tree(X,h,lim,R){if(h>=lim||X.length<=1)return{n:X.length};const q=Math.floor(R()*X[0].length);let mn=1e18,mx=-1e18;for(const x of X){mn=Math.min(mn,x[q]);mx=Math.max(mx,x[q])}
+ if(mn===mx)return{n:X.length};const p=mn+R()*(mx-mn);return{q,p,l:tree(X.filter(x=>x[q]<p),h+1,lim,R),r:tree(X.filter(x=>x[q]>=p),h+1,lim,R)}}
+function path(t,x,h=0){return t.q===undefined?h+cfn(t.n):path(x[t.q]<t.p?t.l:t.r,x,h+1)}
+function forest(X,R){const psi=Math.min(256,X.length),lim=Math.ceil(Math.log2(psi)),T=[];for(let i=0;i<100;i++){const S=[];for(let j=0;j<psi;j++)S.push(X[Math.floor(R()*X.length)]);T.push(tree(S,0,lim,R))}return{T,psi}}
+const iso=(F,x)=>2**(-(F.T.reduce((s,t)=>s+path(t,x),0)/F.T.length)/cfn(F.psi));
+function rules(f){const o=[];
+ if(f.present&&f.dist>RAD)o.push(['Outside geofence',Math.round(25+Math.min(15,(f.dist-RAD)/150)),`${Math.round(f.dist)} m from worksite (limit ${RAD} m)`]);
+ if(f.dup)o.push(['Duplicate biometric',45,'Same fingerprint hash registered under several worker IDs']);
+ if(f.pay>0&&!f.present)o.push(['Paid without attendance',35,`₹${f.pay} released with no verified attendance`]);
+ else if(f.pay>WAGE)o.push(['Overpayment',25,`₹${f.pay} paid vs ₹${WAGE} daily wage`]);
+ if(f.bio<.7)o.push(['Weak biometric match',f.bio<.5?20:15,`Match confidence ${(f.bio*100).toFixed(0)}%`]);
+ if(f.acct)o.push(['Shared bank account',20,'Payment account linked to several workers']);
+ if(f.present&&f.dist<3)o.push(['Exact-centre GPS',10,'Coordinates identical to worksite centre']);
+ return o}
+let D;
+function score(f){const r=rules(f),rs=Math.min(100,r.reduce((s,x)=>s+x[1],0)),raw=iso(D.F,vec(f)),ia=Math.max(0,Math.min(100,(raw-D.mn)/(D.mx-D.mn||1)*100));
+ return{rules:r,ia,risk:Math.min(100,Math.round(.85*rs+.25*ia))}}
+function gen(seed){
+ const R=mb(seed),rnd=(a,b)=>a+(b-a)*R(),ri=(a,b)=>Math.floor(rnd(a,b+1));
+ const nm=['Bhor','Velhe','Mulshi','Maval','Purandar','Haveli','Junnar','Khed','Ambegaon','Daund','Baramati','Indapur'];
+ const sups=['R. Kulkarni','S. Jadhav','M. Shinde','A. Pawar','V. More','P. Gaikwad'];
+ const sites=nm.map((n,i)=>({id:i,name:n,lat:18.3+rnd(0,.5),lng:73.5+rnd(0,.7),sup:i%6}));
+ const workers=[];for(let i=0;i<180;i++)workers.push({id:i,code:'W'+String(i+1).padStart(3,'0'),site:i%12,acct:'AC'+(7000+i),hash:'B'+(R()*1e9|0).toString(16),type:null});
+ const pool=workers.filter(w=>[2,4].includes(w.site%6));
+ const take=(t,n)=>{let c=0;while(c<n){const w=R()<.6?pool[ri(0,pool.length-1)]:workers[ri(0,179)];if(w.type)continue;w.type=t;c++}};
+ take('ghost',9);take('proxy',12);take('payment',10);take('dup',8);
+ workers.filter(w=>w.type==='ghost').forEach((w,i)=>w.acct='AC9'+(i%3));
+ workers.filter(w=>w.type==='dup').forEach(w=>{let a;do{a=workers[ri(0,179)]}while(a.type);a.type='dup';w.hash=a.hash});
+ const hc={},ac={};workers.forEach(w=>{hc[w.hash]=(hc[w.hash]||0)+1;ac[w.acct]=(ac[w.acct]||0)+1});
+ const recs=[];
+ workers.forEach(w=>{const s=sites[w.site];for(let d=0;d<DAYS;d++){
+  let present=R()<.88,dist=rnd(5,220),bio=rnd(.88,.99),pay=0,lag=ri(3,7),fr=0;
+  if(!w.type){if(R()<.012)dist=rnd(320,520);if(R()<.012)bio=rnd(.6,.75)}
+  if(w.type==='ghost'){present=true;dist=rnd(0,2);bio=rnd(.3,.62);lag=ri(1,3);fr=1}
+  if(w.type==='proxy'&&present&&R()<.7){dist=rnd(900,6000);bio=rnd(.7,.9);fr=1}
+  if(w.type==='dup'&&present)fr=1;
+  if(present)pay=WAGE;
+  if(w.type==='payment'&&R()<.3){pay=present?2*WAGE:WAGE;lag=ri(0,1);fr=1}
+  if(!present&&!pay)continue;
+  const b=rnd(0,6.2832),lat=s.lat+dist*Math.cos(b)/111320,lng=s.lng+dist*Math.sin(b)/(111320*Math.cos(s.lat*Math.PI/180));
+  recs.push({i:recs.length,w:w.id,site:s.id,sup:s.sup,day:d,present,dist:hav(s.lat,s.lng,lat,lng),lat,lng,bio,pay,lag,fr,type:w.type,dup:hc[w.hash]>1,acct:ac[w.acct]>1})}});
+ D={sites,sups,workers,recs};const R2=mb(seed+7);D.F=forest(recs.map(vec),R2);
+ const raw=recs.map(r=>iso(D.F,vec(r)));D.mn=Math.min(...raw);D.mx=Math.max(...raw);
+ recs.forEach(r=>Object.assign(r,score(r)))}
+//UI
+let thr=40,tab='ov',fsite=-1,ftype='',tsite=-1,seed=2026;
+const $=s=>document.querySelector(s),cl=r=>r>=75?'hi':r>=thr?'mid':'ok';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN'),pc=x=>(x*100).toFixed(1)+'%';
+const TY={ghost:'Ghost worker',proxy:'Off-site / proxy',payment:'Payment fraud',dup:'Duplicate biometric'};
+function ev(){let tp=0,fp=0,fn=0,tn=0;for(const r of D.recs){const f=r.risk>=thr;if(f&&r.fr)tp++;else if(f)fp++;else if(r.fr)fn++;else tn++}
+ const P=tp/(tp+fp||1),Rc=tp/(tp+fn||1);return{tp,fp,fn,tn,P,Rc,F:2*P*Rc/(P+Rc||1),FPR:fp/(fp+tn||1),red:1-(tp+fp)/D.recs.length}}
+function auc(){const a=[...D.recs].sort((x,y)=>x.risk-y.risk);let rs=0,i=0;while(i<a.length){let j=i;while(j<a.length&&a[j].risk===a[i].risk)j++;const rk=(i+1+j)/2;for(let k=i;k<j;k++)if(a[k].fr)rs+=rk;i=j}
+ const np=a.filter(x=>x.fr).length,nn=a.length-np;return(rs-np*(np+1)/2)/(np*nn)}
+const bars=(a,mx)=>a.map(([n,v,t])=>`<div class="row"><span>${esc(n)}</span><div class="bt" style="flex:1"><div class="bar" style="width:${Math.max(0,v/mx*100)}%"></div></div><b>${t}</b></div>`).join('');
+function ov(){const fl=D.recs.filter(r=>r.risk>=thr),e=ev();
+ const bs=D.sites.map(s=>{const a=D.recs.filter(r=>r.site===s.id),f=a.filter(r=>r.risk>=thr);return{...s,f:f.length,rate:f.length/a.length}});
+ const x0=Math.min(...bs.map(s=>s.lng)),x1=Math.max(...bs.map(s=>s.lng)),y0=Math.min(...bs.map(s=>s.lat)),y1=Math.max(...bs.map(s=>s.lat)),mx=Math.max(...bs.map(s=>s.rate),.01);
+ const px=s=>50+(s.lng-x0)/(x1-x0||1)*500,py=s=>35+(y1-s.lat)/(y1-y0||1)*250;
+ const dots=bs.map(s=>{const q=s.rate/mx,r=9+q*20;return`<g data-site="${s.id}" style="cursor:pointer"><circle cx="${px(s)}" cy="${py(s)}" r="${r}" fill="${q>.66?'var(--hi)':q>.33?'var(--mid)':'var(--ok)'}" fill-opacity=".8"/><text x="${px(s)}" y="${py(s)+4}" text-anchor="middle" font-size="11" font-weight="600" fill="#fff">${s.f}</text><text x="${px(s)}" y="${py(s)+r+12}" text-anchor="middle" font-size="11" fill="var(--mut)">${s.name}</text></g>`}).join('');
+ const top=[...bs].sort((a,b)=>b.rate-a.rate);
+ return`<div class="g k"><div class="card"><p class="m">Attendance records scanned</p><p class="big">${D.recs.length}</p></div><div class="card"><p class="m">Flagged for audit</p><p class="big">${fl.length}</p></div><div class="card"><p class="m">Wages at risk</p><p class="big">${inr(fl.reduce((s,r)=>s+r.pay,0))}</p></div><div class="card"><p class="m">Audit workload saved</p><p class="big">${pc(e.red)}</p></div></div>
+ <div class="g two" style="margin-top:12px"><div class="card"><h2>Risk map by worksite</h2><p class="m">Bubble = flagged records. Tap a site to see its alerts.</p><svg viewBox="0 0 600 320" role="img" aria-label="Worksite risk map">${dots}</svg></div>
+ <div class="card"><h2>Highest-risk worksites</h2>${bars(top.slice(0,8).map(s=>[s.name+' ('+D.sups[s.sup]+')',s.rate,pc(s.rate)]),top[0].rate||1)}</div></div>`}
+function al(){const types=[...new Set(D.recs.flatMap(r=>r.rules.map(x=>x[0])))];
+ const a=D.recs.filter(r=>r.risk>=thr&&(fsite<0||r.site===fsite)&&(!ftype||r.rules.some(x=>x[0]===ftype))).sort((x,y)=>y.risk-x.risk);
+ return`<div class="card"><div class="top"><h2>${a.length} flagged records${fsite>=0?' at '+D.sites[fsite].name:''}</h2><div><select data-f="site"><option value="-1">All worksites</option>${D.sites.map(s=>`<option value="${s.id}"${s.id===fsite?' selected':''}>${s.name}</option>`).join('')}</select> <select data-f="type"><option value="">All signals</option>${types.map(t=>`<option${t===ftype?' selected':''}>${t}</option>`).join('')}</select></div></div>
+ <p class="m">Showing top ${Math.min(80,a.length)} by risk. Tap a row for evidence.</p><div class="sc"><table><tr><th>Risk</th><th>Worker</th><th>Worksite</th><th>Day</th><th>Signals</th></tr>${a.slice(0,80).map(r=>`<tr data-rec="${r.i}"><td><span class="rk ${cl(r.risk)}">${r.risk}</span></td><td>${D.workers[r.w].code}</td><td>${D.sites[r.site].name}</td><td>${r.day+1}</td><td>${r.rules.map(x=>`<span class="chip">${x[0]}</span>`).join('')}</td></tr>`).join('')}</table></div></div>`}
+function sim(r){const v=x=>[x.dist/1000,x.bio,x.pay/WAGE,x.lag/10,+!!x.dup,+!!x.acct,+!!x.present],a=v(r);
+ return D.recs.filter(x=>x.fr&&x.i!==r.i).map(x=>({x,d:Math.hypot(...v(x).map((q,i)=>q-a[i]))})).sort((p,q)=>p.d-q.d).slice(0,3).map(o=>o.x)}
+function dr(r){const w=D.workers[r.w],s=D.sites[r.site],k=90/(Math.max(r.dist,RAD)*1.35),dx=(r.lng-s.lng)*111320*Math.cos(s.lat*Math.PI/180)*k,dy=-(r.lat-s.lat)*111320*k;
+ const ct=r.rules.map(x=>[x[0],x[1]*.85,(x[1]*.85).toFixed(1)]).concat([['Anomaly model (Isolation Forest)',r.ia*.25,(r.ia*.25).toFixed(1)]]),sm=sim(r);
+ const txt=`GHOSTGUARD AI - CASE FILE\nWorker: ${w.code}   Worksite: ${s.name}   Supervisor: ${D.sups[r.sup]}   Day: ${r.day+1}\nRISK SCORE: ${r.risk}/100   (rules + anomaly score ${r.ia.toFixed(0)}/100)\n\nEVIDENCE\n${r.rules.map(x=>'- '+x[0]+': '+x[2]).join('\n')||'- none'}\nGPS: ${r.lat.toFixed(5)}, ${r.lng.toFixed(5)} (${Math.round(r.dist)} m from worksite)\nBiometric confidence: ${(r.bio*100).toFixed(0)}%   Payment: ${inr(r.pay)} (lag ${r.lag} days)\n\nSIMILAR CONFIRMED CASES\n${sm.map(x=>'- '+D.workers[x.w].code+' day '+(x.day+1)+' ('+TY[x.type]+')').join('\n')}\n\nACTION: ${r.risk>=75?'Escalate to field verification team':'Queue for auditor review'}`;
+ return`<div class="top"><h2>${w.code} · ${s.name} · day ${r.day+1}</h2><button class="btn o" data-act="close">Close</button></div><p><span class="rk ${cl(r.risk)}">${r.risk}</span> risk score${r.fr?' · <span class="m">ground truth: fraud</span>':' · <span class="m">ground truth: genuine</span>'}</p>
+ <h2 style="margin-top:12px">Why it was flagged</h2>${bars(ct,50)}
+ <h2 style="margin-top:12px">GPS vs sanctioned geofence</h2><svg viewBox="-110 -110 220 220" width="220"><circle r="${RAD*k}" fill="var(--br)" fill-opacity=".15" stroke="var(--br)"/><circle r="3" fill="var(--br)"/><line x1="0" y1="0" x2="${dx}" y2="${dy}" stroke="var(--mut)" stroke-dasharray="3"/><circle cx="${dx}" cy="${dy}" r="5" fill="${r.dist>RAD?'var(--hi)':'var(--ok)'}"/></svg><p class="m">${Math.round(r.dist)} m from centre · limit ${RAD} m</p>
+ <h2 style="margin-top:12px">Similar confirmed fraud</h2>${sm.map(x=>`<p class="m">${D.workers[x.w].code} · ${D.sites[x.site].name} · day ${x.day+1} · ${TY[x.type]}</p>`).join('')}
+ <h2 style="margin-top:12px">Case file</h2><textarea id="cf" readonly>${esc(txt)}</textarea><p><button class="btn" data-act="copy">Copy case file</button> <span id="cm" class="m"></span></p>`}
+function nw(){const f=D.recs.filter(r=>r.risk>=thr),avg=f.length/D.recs.length;
+ const rows=D.sups.map((n,i)=>{const a=D.recs.filter(r=>r.sup===i),fl=a.filter(r=>r.risk>=thr);return{n,i,a:a.length,f:fl.length,rt:fl.length/a.length,fw:new Set(fl.map(r=>r.w)).size}});
+ const g={};D.workers.forEach(w=>(g[w.hash]=g[w.hash]||[]).push(w));const dc=Object.values(g).filter(a=>a.length>1);
+ const sel=D.recs.filter(r=>tsite<0||r.site===tsite),pts=[...Array(DAYS)].map((_,d)=>sel.filter(r=>r.day===d&&r.risk>=thr).length),m=Math.max(...pts,1);
+ const line=pts.map((v,d)=>`${20+d*(560/(DAYS-1))},${130-v/m*110}`).join(' ');
+ return`<div class="card"><h2>Supervisor collusion check</h2><p class="m">A supervisor is suspect when their flagged rate is above 1.8× the network average (${pc(avg)}).</p><div class="sc"><table><tr><th>Supervisor</th><th>Records</th><th>Flagged</th><th>Rate</th><th>Workers flagged</th><th></th></tr>${rows.map(r=>`<tr><td>${r.n}</td><td>${r.a}</td><td>${r.f}</td><td>${pc(r.rt)}</td><td>${r.fw}</td><td>${r.rt>1.8*avg?'<span class="warn">Possible collusion</span>':''}</td></tr>`).join('')}</table></div></div>
+ <div class="g two" style="margin-top:12px"><div class="card"><h2>Biometric identities on multiple worker IDs</h2>${dc.map(a=>`<p>${a.map(w=>w.code+' ('+D.sites[w.site].name+')').join(' = ')}</p>`).join('')||'<p class="m">None found.</p>'}</div>
+ <div class="card"><h2>Flagged records per day</h2><select data-f="tsite"><option value="-1">All worksites</option>${D.sites.map(s=>`<option value="${s.id}"${s.id===tsite?' selected':''}>${s.name}</option>`).join('')}</select><svg viewBox="0 0 600 150" role="img" aria-label="Trend"><polyline points="${line}" fill="none" stroke="var(--br)" stroke-width="2.5"/><text x="20" y="147" font-size="11" fill="var(--mut)">day 1</text><text x="580" y="147" font-size="11" text-anchor="end" fill="var(--mut)">day ${DAYS} · peak ${m}</text></svg></div></div>`}
+function evl(){const e=ev(),a=auc();
+ const ty=Object.keys(TY).map(k=>{const x=D.recs.filter(r=>r.fr&&r.type===k),h=x.filter(r=>r.risk>=thr).length;return[TY[k]+` (${h}/${x.length})`,h/x.length,pc(h/x.length)]});
+ return`<div class="g k"><div class="card"><p class="m">Precision</p><p class="big">${pc(e.P)}</p></div><div class="card"><p class="m">Recall</p><p class="big">${pc(e.Rc)}</p></div><div class="card"><p class="m">F1 score</p><p class="big">${e.F.toFixed(2)}</p></div><div class="card"><p class="m">False-positive rate</p><p class="big">${pc(e.FPR)}</p></div><div class="card"><p class="m">AUC-ROC</p><p class="big">${a.toFixed(3)}</p></div></div>
+ <div class="g two" style="margin-top:12px"><div class="card"><h2>Confusion matrix</h2><table><tr><th></th><th>Flagged</th><th>Not flagged</th></tr><tr><td>Actually fraud</td><td><b>${e.tp}</b></td><td>${e.fn}</td></tr><tr><td>Actually genuine</td><td>${e.fp}</td><td><b>${e.tn}</b></td></tr></table><p class="m">Auditors review ${e.tp+e.fp} of ${D.recs.length} records (${pc(e.red)} fewer than a full audit).</p></div>
+ <div class="card"><h2>Recall by fraud type</h2>${bars(ty,1)}<p class="m">Move the threshold at the top to trade recall against false positives.</p></div></div>`}
+function lcView(){return`<div class="g two"><div class="card"><h2>Verify an attendance now</h2><p class="m">Enter what the field device reports. The same scoring engine returns a risk score instantly.</p>
+ <p>Presets: <button class="btn o" data-pre="0">Honest worker</button> <button class="btn o" data-pre="1">Proxy attendance</button> <button class="btn o" data-pre="2">Ghost worker</button></p>
+ <p>Distance from worksite: <b id="ldv"></b> m</p><input id="ld" type="range" min="0" max="3000" step="10" value="80">
+ <p>Biometric match confidence: <b id="lbv"></b>%</p><input id="lb" type="range" min="30" max="100" value="95">
+ <p><label><input type="checkbox" id="lu"> Fingerprint already registered to another worker ID</label></p><p><label><input type="checkbox" id="lp"> Wage released but no verified attendance</label></p><p><label><input type="checkbox" id="la"> Payment account shared with other workers</label></p></div>
+ <div class="card" id="lr"></div></div>`}
+function lcUpd(){const f={present:!$('#lp').checked,dist:+$('#ld').value,bio:$('#lb').value/100,pay:WAGE,lag:5,dup:$('#lu').checked,acct:$('#la').checked},s=score(f);
+ $('#ldv').textContent=f.dist;$('#lbv').textContent=$('#lb').value;
+ $('#lr').innerHTML=`<h2>Result</h2><p><span class="rk ${cl(s.risk)}" style="font-size:22px">${s.risk}</span> <b>${s.risk>=75?'Escalate to field team':s.risk>=thr?'Flag for auditor review':'Clear'}</b></p>${bars(s.rules.map(x=>[x[0],x[1]*.85,(x[1]*.85).toFixed(1)]).concat([['Anomaly model',s.ia*.25,(s.ia*.25).toFixed(1)]]),50)}<p class="m">${s.rules.map(x=>x[2]).join(' · ')||'No rule violated.'}</p>`}
+const TABS=[['ov','Overview',ov],['al','Alerts',al],['nw','Network',nw],['ev','Evaluation',evl],['lc','Live check',lcView]];
+function render(){$('#tabs').innerHTML=TABS.map(t=>`<button class="tab${t[0]===tab?' on':''}" data-tab="${t[0]}">${t[1]}</button>`).join('');
+ $('#v').innerHTML=TABS.find(t=>t[0]===tab)[2]();if(tab==='lc')lcUpd()}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],[data-site],[data-rec],[data-act],[data-pre]');if(!t)return;const d=t.dataset;
+ if(d.tab){tab=d.tab;render()}
+ else if(d.site!==undefined){fsite=+d.site;tab='al';render()}
+ else if(d.rec!==undefined){$('#dp').innerHTML=dr(D.recs[+d.rec]);$('#dr').classList.add('on')}
+ else if(d.act==='close')$('#dr').classList.remove('on');
+ else if(d.act==='copy'){const c=$('#cf');c.select();let ok=false;try{navigator.clipboard.writeText(c.value);ok=true}catch(x){}try{ok=document.execCommand('copy')||ok}catch(x){}$('#cm').textContent=ok?'Copied.':'Press and hold the text to copy.'}
+ else if(d.pre!==undefined){const P=[[80,95,0,0,0],[1800,82,0,0,0],[0,45,0,0,1]][+d.pre];$('#ld').value=P[0];$('#lb').value=P[1];$('#lu').checked=!!P[2];$('#lp').checked=!!P[3];$('#la').checked=!!P[4];lcUpd()}});
+$('#dr').addEventListener('click',e=>{if(e.target.id==='dr')$('#dr').classList.remove('on')});
+document.addEventListener('input',e=>{if(e.target.closest('#lr,#lc'))return;if(['ld','lb','lu','lp','la'].includes(e.target.id))lcUpd()});
+document.addEventListener('change',e=>{const f=e.target.dataset.f;if(!f)return;if(f==='site')fsite=+e.target.value;if(f==='type')ftype=e.target.value;if(f==='tsite')tsite=+e.target.value;render()});
+$('#th').addEventListener('input',e=>{thr=+e.target.value;$('#tv').textContent=thr;render()});
+$('#re').addEventListener('click',()=>{seed=Math.floor(Math.random()*1e6);gen(seed);fsite=-1;ftype='';render()});
+gen(seed);render();
+</script></body></html>
