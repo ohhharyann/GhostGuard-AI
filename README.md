@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a1a2e,50:16213e,100:0f3460&height=200&section=header&text=GhostGuard%20AI&fontSize=60&fontColor=00d4ff&animation=fadeIn&fontAlignY=38&desc=Intelligent%20Fraud%20Detection%20%26%20Workforce%20Monitoring%20Platform&descAlignY=55&descColor=e94560" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=0:1a1a2e,50:16213e,100:0f3460&amp;height=200&amp;section=header&amp;text=GhostGuard%20AI&amp;fontSize=60&amp;fontColor=00d4ff&amp;animation=fadeIn&amp;fontAlignY=38&amp;desc=Intelligent%20Fraud%20Detection%20%26%20Workforce%20Monitoring%20Platform&amp;descAlignY=55&amp;descColor=e94560" width="100%"/>
 
 <br/>
 
@@ -57,7 +57,7 @@
 | Field | Value |
 |-------|-------|
 | 👤 Username | `admin` |
-| 🔑 Password | *Shared separately — do not publish* |
+| 🔑 Password | Aryan@123 |
 
 > 💡 Hosted on Render's free tier — first load may take a few seconds if the service is cold.
 
