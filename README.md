@@ -1,6 +1,44 @@
 <div align="center">
 
-![GhostGuard AI Header](https://capsule-render.vercel.app/api?type=waving&color=0:1a1a2e,50:16213e,100:0f3460&height=200&section=header&text=GhostGuard%20AI&fontSize=60&fontColor=00d4ff&animation=fadeIn&fontAlignY=38&desc=Intelligent%20Fraud%20Detection%20%26%20Workforce%20Monitoring%20Platform&descAlignY=55&descColor=e94560)
+
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1020"/>
+      <stop offset="55%" stop-color="#16213e"/>
+      <stop offset="100%" stop-color="#0f3460"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#e94560"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="260" rx="18" fill="url(#bg)"/>
+  <circle cx="1040" cy="30" r="180" fill="#00d4ff" opacity=".06"/>
+  <circle cx="1100" cy="220" r="130" fill="#e94560" opacity=".08"/>
+
+  <path d="M0 220 Q300 170 600 225 T1200 190" fill="none" stroke="#00d4ff" opacity=".18" stroke-width="2"/>
+
+  <text x="600" y="112" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="64"
+        font-weight="bold" fill="#00d4ff">GHOSTGUARD AI</text>
+
+  <rect x="400" y="137" width="400" height="3" rx="2" fill="url(#accent)"/>
+
+  <text x="600" y="178" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="21"
+        fill="#e2e8f0">INTELLIGENT FRAUD DETECTION</text>
+
+  <text x="600" y="207" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="17"
+        fill="#94a3b8">AI-Powered Workforce Monitoring Platform</text>
+
+  <text x="600" y="240" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="12"
+        letter-spacing="4" fill="#00d4ff">SECURE • SMART • REAL-TIME</text>
+</svg>
+
 
 <br/>
 
